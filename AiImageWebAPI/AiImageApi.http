@@ -1,0 +1,10 @@
+@AiImageApi_HostAddress = http://localhost:7241
+
+
+
+< ./example.png
+--boundary
+Content-Disposition: form-data; name="steps"
+
+stabilityAI,realESRGAN
+--boundary--
