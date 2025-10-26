@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+
+  stability-service:
+    build:
+      context: ./stability-service
+      dockerfile: Dockerfile
+    container_name: stability-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  realesrgan-service:
+    build:
+      context: ./realesrgan-service
+      dockerfile: Dockerfile
+    container_name: realesrgan-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./weights:/app/weights  # for your Real-ESRGAN model weights
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
