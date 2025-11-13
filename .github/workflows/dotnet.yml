@@ -24,8 +24,9 @@ jobs:
 
     - name: Build Core & API
       run: |
-        dotnet build AiImageCore/AiImageCore.csproj --configuration Release
-        dotnet build AiImageApi/AiImageApi.csproj --configuration Release
+        dotnet build AiImage.Core/AiImage.Core.csproj --configuration Release
+        dotnet build AiImage.HybridApp/AiImage.HybridApp.csproj --configuration Release
     - name: Run tests
       run: dotnet test AiImage.sln --no-build --verbosity normal
+
 
