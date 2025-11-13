@@ -22,8 +22,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore AiImage.sln
 
-    - name: Build solution
-      run: dotnet build AiImage.sln --configuration Release --no-restore
-
+    - name: Build Core & API
+      run: |
+        dotnet build AiImageCore/AiImageCore.csproj --configuration Release
+        dotnet build AiImageApi/AiImageApi.csproj --configuration Release
     - name: Run tests
       run: dotnet test AiImage.sln --no-build --verbosity normal
+
