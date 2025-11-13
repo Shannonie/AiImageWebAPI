@@ -1,0 +1,103 @@
+﻿@page "/process"
+@using AiImage.HybridApp.Services
+@using AiImage.HybridApp.ViewModels
+@using AiImage.Core.Models
+@using Microsoft.Extensions.Configuration
+@inject IAuthService Auth
+@inject IApiService Api
+@inject IConfiguration Config
+
+<div class="page-container">
+    @if (string.IsNullOrEmpty(ViewModel.Token)) 
+    {
+        <!-- LOGIN -->
+        <div class="card">
+        <h3>Login</h3>
+        <input @bind="ViewModel.Username" placeholder="Username" />
+        <input @bind="ViewModel.Password" type="password" placeholder="Password" />
+        <button class="primary-button" @onclick="OnLoginAndValidateAsync">Login</button>
+
+        @if (!string.IsNullOrEmpty(ViewModel.LoginMessage))
+        {
+            <div class="error-box">
+                <div class="error-content">
+                    <p class="error">@ViewModel.LoginMessage</p>
+                </div>
+            </div>
+        }
+        </div>
+    }
+    else
+    {
+        <!-- PROCESS FORM OR IMAGE RESULT -->
+        @if (ViewModel.Response?.FinalResult?.ImageBase64 != null)
+        {
+            <div class="result-container fade-in">
+                <h4>Result</h4>
+                <img src="data:image/png;base64,@ViewModel.Response.FinalResult.ImageBase64"
+                alt="AI Result" class="result-image" />
+            </div>
+            <button class="secondary-button" @onclick="OnClearResult">Clear</button>
+        }
+        else
+        {
+            <div class="card process-card @(ViewModel.IsProcessing ? "disabled" : "")">
+                <AiTaskForm OnSubmit="OnSubmitAiRequest" />
+            </div>
+        }
+
+        @if (ViewModel.IsProcessing)
+        {
+            <div class="overlay fade-in">
+                <div class="spinner"></div>
+                <p class="loading-text">Processing...</p>
+            </div>
+        }
+    }
+
+    @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+    {
+        <div class="error-box">
+            <div class="error-content">
+                <p>@ViewModel.ErrorMessage</p>
+                @if (ViewModel.ErrorMessage.Contains("too long"))
+                {
+                    <button class="retry-button" @onclick="OnRetryLastAction">Try Again</button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ProcessViewModel ViewModel = default!;
+    
+    protected override void OnInitialized()
+    {
+        ViewModel = new ProcessViewModel(Api, Auth);
+    }
+
+    private async Task OnLoginAndValidateAsync()
+    {
+        await ViewModel.LoginAndValidateAsync();
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitAiRequest(AiTaskRequest request)
+    {
+        await ViewModel.ProcessRequestAsync(request);
+        StateHasChanged();
+    }
+
+    private void OnClearResult()
+    {
+        ViewModel.ClearResult();
+    }
+
+    private async Task OnRetryLastAction()
+    {
+        await ViewModel.RetryLastActionAsync();
+        StateHasChanged();
+    }
+ 
+}

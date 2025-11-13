@@ -1,0 +1,95 @@
+﻿@using AiImage.Core.Models
+
+<EditForm Model="@request" OnValidSubmit="OnSubmitAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary /> <!-- shows all errors -->
+
+    <div class="mb-3">
+    <InputFile OnChange="OnFileChangeAsync" />
+    </div>
+
+    <div class="mb-3">
+        <label>Steps (comma separated)</label>
+        <InputText class="form-control" @bind-Value="stepsInput" />
+        <ValidationMessage For="@(() => stepsInput)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Image Name</label>
+        <InputText class="form-control" @bind-Value="request.Payload.ImageName" />
+    </div>
+
+    <div class="mb-3">
+        <label>Content Type</label>
+        <InputText class="form-control" @bind-Value="request.Payload.ContentType" />
+    </div>
+
+    <div class="mb-3">
+        <label>Prompt</label>
+        <InputTextArea class="form-control" @bind-Value="prompt" />
+        <ValidationMessage For="@(() => prompt)" />
+    </div>
+    <div class="row">
+        <div class="col">
+            <label>Width</label>
+            <InputNumber class="form-control" @bind-Value="width" />
+        </div>
+        <div class="col">
+            <label>Height</label>
+            <InputNumber class="form-control" @bind-Value="height" />
+        </div>
+    </div>
+
+    <div class="mb-3 mt-3">
+        <label>Model</label>
+        <InputText class="form-control" @bind-Value="model" />
+    </div>
+    <button class="primary-button" type="submit">Run Processing</button>
+</EditForm>
+
+@code
+{
+    [Parameter] public EventCallback<AiTaskRequest> OnSubmit { get; set; }
+    private AiTaskRequest request = new()
+    {
+        Steps = new List<string>(),
+        Payload = new ImagePayloadRequest()
+        {
+            ImageBase64 = ""
+        }
+    };
+    private string stepsInput = "stabilityai, realesrgan, removebg";
+    private string prompt = "A chic woman sitting at a Paris café in warm afternoon sunlight. The street behind her is lively with people and Haussmann-style building. Realistic photo with natural colors.";
+    private int width = 512;
+    private int height = 512;
+    private string model = "x4plus";
+
+    #region event handler function
+    private async Task OnFileChangeAsync(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0)
+            return;
+
+        var file = e.File;
+        using var ms = new MemoryStream();
+        await file.OpenReadStream().CopyToAsync(ms);
+        request.Payload.ImageBase64 = Convert.ToBase64String(ms.ToArray());
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        request.Steps = stepsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(s => s.Trim()).ToList();
+
+        request.Options = new Dictionary<string, object>
+        {
+            { "prompt", prompt },
+            { "width", width },
+            { "height", height },
+            { "model", model }
+        };
+
+        await OnSubmit.InvokeAsync(request);
+    }
+    #endregion
+}
