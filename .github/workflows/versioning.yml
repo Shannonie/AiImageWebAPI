@@ -1,0 +1,47 @@
+name: Auto Versioning
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Read version.json
+      id: version
+      run: |
+        major=$(jq '.major' version.json)
+        minor=$(jq '.minor' version.json)
+        patch=$(jq '.patch' version.json)
+
+        # read commit count (auto build number)
+        commits=$(git rev-list --count HEAD)
+
+        version="$major.$minor.$patch+$commits"
+
+        echo "version=$version" >> $GITHUB_OUTPUT
+
+    - name: Set version into csproj files
+      run: |
+        find . -name "*.csproj" -print0 | while read -d $'\0' file
+        do
+          echo "Updating version in $file"
+          xmlstarlet ed --inplace \
+            -u "/Project/PropertyGroup/Version" \
+            -v "${{ steps.version.outputs.version }}" "$file"
+        done
+
+    - name: Commit updated versions
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Auto version bump to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+        git push
