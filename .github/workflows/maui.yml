@@ -1,0 +1,32 @@
+name: Build MAUI Hybrid App (Windows)
+
+on:
+  workflow_dispatch:   # Manual trigger
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install MAUI Workloads
+      run: dotnet workload install maui maui-windows
+
+    - name: Restore dependencies
+      run: dotnet restore AiImageSolution.sln
+
+    - name: Build MAUI Windows App
+      run: dotnet publish AiImage.HybridApp/AiImage.HybridApp.csproj -c Release -f net8.0-windows10.0.19041.0
+
+    - name: Upload Windows App Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AiImage-Windows-App
+        path: AiImage.HybridApp/bin/Release/net8.0-windows10.0.19041.0/win10-x64/publish
