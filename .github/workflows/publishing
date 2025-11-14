@@ -1,0 +1,18 @@
+# Publishing MAUI Apps
+
+## Windows (.msix)
+
+1. Trigger `maui.yml` workflow
+2. Download artifact from GitHub Actions
+3. Install `.msix` or package for Microsoft Store
+
+## Android (.apk)
+
+1. Trigger `maui-android.yml`
+2. Download `.apk` from artifacts
+3. Install on Android device (enable unknown sources)
+
+## Notes
+
+- Signing optional for testing
+- Production: create keystore (Android) / certificate (Windows)
