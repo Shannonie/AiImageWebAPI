@@ -1,0 +1,28 @@
+# CI/CD Workflows
+
+## Build & Test
+
+- `.github/workflows/dotnet.yml`
+- Builds `AiImage.Core` and `AiImageApi`
+- Skips MAUI HybridApp (Linux runner)
+- Runs unit tests
+
+## MAUI Windows Build
+
+- `.github/workflows/maui.yml`
+- Runs on `windows-latest`
+- Builds `AiImage.HybridApp` → `.msix`
+- Manual trigger only
+
+## MAUI Android Build
+
+- `.github/workflows/maui-android.yml`
+- Runs on `ubuntu-latest`
+- Builds `.apk` for Android
+- Manual trigger or push to main
+
+## Auto Versioning
+
+- `.github/workflows/versioning.yml`
+- Updates `csproj` versions from Git tags + commit count
+- Applied to Core, API, HybridApp
